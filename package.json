@@ -1,0 +1,9 @@
+{
+  "name": "aws-python-scheduled-cron",
+  "description": "Wootric integration to Stitck API",
+  "version": "0.1.0",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-python-requirements": "^5.1.1"
+  }
+}

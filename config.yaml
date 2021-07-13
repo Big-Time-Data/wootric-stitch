@@ -1,0 +1,63 @@
+end_users:
+  keys: [id]
+  date_key: updated_at
+  params: {per_page: 50, sort_key: updated_at, sort_order: asc}
+  schema:
+    # https://json-schema.org/learn/getting-started-step-by-step#properties
+    # https://json-schema.org/understanding-json-schema/reference/type.html
+    # type: object
+    properties:
+      id: {type: integer}
+      created_at: {type: ["string", "null"], format: date-time}
+      updated_at: {type: ["string", "null"], format: date-time}
+      email: {type: ["string", "null"]}
+      last_surveyed: {type: ["string", "null"], format: date-time}
+      external_created_at: {type: ["integer", "null"]}
+      last_seen_at: {type: ["string", "null"], format: date-time}
+      properties: {type: ["object", "null"]}
+      phone_number: {type: ["string", "null"]}
+      external_id: {type: ["string", "null"]}
+      last_response: {type: ["object", "null"]}
+      settings: {type: ["object", "null"]}
+
+
+responses:
+  keys: [id]
+  date_key: created_at
+  params: {sort_key: created_at, sort_order: asc}
+  schema:
+    # https://json-schema.org/learn/getting-started-step-by-step#properties
+    # https://json-schema.org/understanding-json-schema/reference/type.html
+    properties:
+      id: {type: integer}
+      end_user_id: {type: ["integer", "null"]}
+      survey_id: {type: ["integer", "null"]}
+      score: {type: ["integer", "null"]}
+      text: {type: ["string", "null"]}
+      completed: {type: ["boolean", "null"]}
+      excluded_from_calculations: {type: ["boolean", "null"]}
+      ip_address: {type: ["string", "null"]}
+      origin_url: {type: ["string", "null"]}
+      created_at: {type: ["string", "null"], format: date-time}
+      updated_at: {type: ["string", "null"], format: date-time}
+      tags: {type: ["array", "null"]}
+      notes: {type: ["array", "null"]}
+      end_user: {type: ["object", "null"]}
+
+
+declines:
+  keys: [id]
+  date_key: created_at
+  params: {sort_key: created_at, sort_order: asc}
+  schema:
+    # https://json-schema.org/learn/getting-started-step-by-step#properties
+    # https://json-schema.org/understanding-json-schema/reference/type.html
+    properties:
+      id: {type: integer}
+      end_user_id: {type: ["integer", "null"]}
+      survey_id: {type: ["integer", "null"]}
+      ip_address: {type: ["string", "null"]}
+      origin_url: {type: ["string", "null"]}
+      created_at: {type: ["string", "null"], format: date-time}
+      updated_at: {type: ["string", "null"], format: date-time}
+      # end_user: {type: ["object", "null"]}
