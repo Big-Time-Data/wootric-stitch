@@ -23,8 +23,8 @@ stitch_session.headers = {'Authorization': f'Bearer {STITCH_TOKEN}', 'Content-Ty
 
 BUCKET = os.getenv('AWS_BUCKET') 
 
-os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID_', os.getenv('AWS_ACCESS_KEY_ID')) # lambda doesn't all this reserve var
-os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY_', os.getenv('AWS_SECRET_ACCESS_KEY')) # lambda doesn't all this reserve var
+os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID_', os.getenv('AWS_ACCESS_KEY_ID')) # lambda doesn't allows this reserve var
+os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY_', os.getenv('AWS_SECRET_ACCESS_KEY')) # lambda doesn't allow this reserve var
 os.environ['AWS_SESSION_TOKEN'] = ''
 
 STATE_KEY = 'wootric.state.json'
