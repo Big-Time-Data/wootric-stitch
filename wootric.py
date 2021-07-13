@@ -4,13 +4,15 @@ from typing import List
 from pathlib import Path
 from pprint import pprint
 
+from botocore.client import Config
+
 
 BATCH_SIZE = 500
 
 wootric_session = requests.Session()
 ACCESS_TOKEN = ''
-CLIENT_ID = os.getenv('CLIENT_ID') 
-CLIENT_SECRET = os.getenv('CLIENT_SECRET') 
+CLIENT_ID = os.getenv('WOOTRIC_CLIENT_ID') 
+CLIENT_SECRET = os.getenv('WOOTRIC_CLIENT_SECRET') 
 BASE_URL = 'https://api.wootric.com'
 
 stitch_session = requests.Session()
@@ -20,7 +22,13 @@ STITCH_BASE_URL = 'https://api.stitchdata.com'
 stitch_session.headers = {'Authorization': f'Bearer {STITCH_TOKEN}', 'Content-Type': 'application/json'}
 
 BUCKET = os.getenv('AWS_BUCKET') 
+
+os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID_', os.getenv('AWS_ACCESS_KEY_ID')) # lambda doesn't all this reserve var
+os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY_', os.getenv('AWS_SECRET_ACCESS_KEY')) # lambda doesn't all this reserve var
+os.environ['AWS_SESSION_TOKEN'] = ''
+
 STATE_KEY = 'wootric.state.json'
+
 s3 = boto3.resource("s3").Bucket(BUCKET)
 
 
@@ -119,7 +127,7 @@ def save_state():
   s3.Object(key=STATE_KEY).put(Body=json.dumps(state))
 
 
-def run():
+def run(event, context):
   global state
 
   # load wootric access token
@@ -158,8 +166,6 @@ def run():
           ts_val = int(date_val.timestamp())
           if date_val and ts_val > state[object_name]:
             state[object_name] = ts_val
-          else:
-            print(f'{ts_val} < {state[object_name]}')
         else:
           print(f'no datekey: {date_key}')
           pprint(record)

@@ -6,6 +6,15 @@ provider:
   name: aws
   runtime: python3.8
   lambdaHashingVersion: 20201221
+  environment:
+    WOOTRIC_CLIENT_ID: ${env:WOOTRIC_CLIENT_ID}
+    WOOTRIC_CLIENT_SECRET: ${env:WOOTRIC_CLIENT_SECRET}
+    STITCH_TOKEN: ${env:STITCH_TOKEN}
+    AWS_ACCESS_KEY_ID_: ${env:AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY_: ${env:AWS_SECRET_ACCESS_KEY}
+    AWS_BUCKET: ${env:AWS_BUCKET}
+    AWS_S3_REGION_NAME: ${env:AWS_S3_REGION_NAME}
+    AWS_S3_SIGNATURE_VERSION: ${env:AWS_S3_SIGNATURE_VERSION}
 
 functions:
   rateHandler:
