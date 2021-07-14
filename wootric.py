@@ -1,8 +1,9 @@
 
-import os, requests, json, dateparser, time, yaml, boto3
+import os, requests, json, dateparser, time, yaml, boto3, slack
 from typing import List
 from pathlib import Path
 from pprint import pprint
+from traceback import format_exc
 
 from botocore.client import Config
 
@@ -23,14 +24,15 @@ stitch_session.headers = {'Authorization': f'Bearer {STITCH_TOKEN}', 'Content-Ty
 
 BUCKET = os.getenv('AWS_BUCKET') 
 
-os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID_', os.getenv('AWS_ACCESS_KEY_ID')) # lambda doesn't allows this reserve var
-os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY_', os.getenv('AWS_SECRET_ACCESS_KEY')) # lambda doesn't allow this reserve var
-os.environ['AWS_SESSION_TOKEN'] = ''
+os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID_', os.getenv('AWS_ACCESS_KEY_ID')) # lambda doesn't allow this reserved var
+os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY_', os.getenv('AWS_SECRET_ACCESS_KEY')) # lambda doesn't allow this reserved var
+os.environ['AWS_SESSION_TOKEN'] = '' # lambda provides this reserved var during execution, need to set blank
 
 STATE_KEY = 'wootric.state.json'
 
 s3 = boto3.resource("s3").Bucket(BUCKET)
 
+slack_client = slack.WebhookClient(url=os.getenv('SLACK_WH_TOKEN'))
 
 # init state
 state = dict(
@@ -130,11 +132,16 @@ def save_state():
 def run(event, context):
   global state
 
-  # load wootric access token
-  get_access_token()
+  try:
+    # load wootric access token
+    get_access_token()
 
-  # load state
-  load_state()
+    # load state
+    load_state()
+    
+  except Exception as E:
+    slack_client.send(text=f"Error occurred for Wootric-Stitch Integration:\n{format_exc()}")
+    raise E
 
   config_file = Path('config.yaml')
   with config_file.open() as file:
@@ -179,7 +186,9 @@ def run(event, context):
           
           records = []
     except Exception as E:
-      errors.append(str(E))
+      errors.append(format_exc())
   
   if len(errors) > 0:
-    raise Exception('\n\n'.join(errors))
+    e = '\n\n'.join(errors)
+    slack_client.send(text=f'Error occurred for Wootric-Stitch Integration:\n{e}')
+    raise Exception(e)

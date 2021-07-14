@@ -3,3 +3,4 @@ PyYAML==5.4.1
 requests==2.25.0
 boto3==1.17.110
 regex==2019.11.1
+slackclient==2.9.3
