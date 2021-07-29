@@ -73,6 +73,11 @@ def wootric_request(object_name: str, date_key: str, **params):
     req.prepare_url(url, params)
     print(req.url)
     resp = wootric_session.get(req.url)
+    if resp is None:
+      raise Exception(f'Response is for: {req.url}')
+    elif not resp.ok:
+      raise Exception(f'\n\nHTTP Status Code {resp.status_code} for {req.url}: \n{resp.text}')
+    
     data = resp.json()
     if len(data) == 0:
       break
@@ -192,3 +197,5 @@ def run(event, context):
     e = '\n\n'.join(errors)
     slack_client.send(text=f'Error occurred for Wootric-Stitch Integration:\n{e}')
     raise Exception(e)
+  
+# run(None, None)
