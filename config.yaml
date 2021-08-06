@@ -24,7 +24,7 @@ end_users:
 responses:
   keys: [id]
   date_key: created_at
-  params: {sort_key: created_at, sort_order: asc}
+  params: {per_page: 50, sort_key: created_at, sort_order: asc}
   schema:
     # https://json-schema.org/learn/getting-started-step-by-step#properties
     # https://json-schema.org/understanding-json-schema/reference/type.html
@@ -48,7 +48,7 @@ responses:
 declines:
   keys: [id]
   date_key: created_at
-  params: {sort_key: created_at, sort_order: asc}
+  params: {per_page: 50, sort_key: created_at, sort_order: asc}
   schema:
     # https://json-schema.org/learn/getting-started-step-by-step#properties
     # https://json-schema.org/understanding-json-schema/reference/type.html

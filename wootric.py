@@ -1,11 +1,11 @@
 
-import os, requests, json, dateparser, time, yaml, boto3, slack
+import os, requests, json, dateparser, time, yaml, boto3, slack, random
 from typing import List
 from pathlib import Path
 from pprint import pprint
 from traceback import format_exc
 
-from botocore.client import Config
+from missing_responses import get_missing_responses
 
 
 BATCH_SIZE = 500
@@ -57,18 +57,27 @@ def get_access_token():
   wootric_session.headers = dict(Authorization=f'Bearer {ACCESS_TOKEN}')
 
 
+def wootric_response(user_id: str, response_id: str):
+  url = f'{BASE_URL}/v1/end_users/{user_id}/responses/{response_id}'
+  print(url)
+  resp = wootric_session.get(url)
+  return resp.json()
 
 def wootric_request(object_name: str, date_key: str, **params):
   url = f'{BASE_URL}/v1/{object_name}'
   req = requests.models.PreparedRequest()
+  date_val = state[object_name]
 
-  params[f"{date_key.replace('_at', '')}[gt]"] = state[object_name]
+  # put random limit because seems some get missed. an attempt to randomize sort anchors
+  limit = random.randint(5,29)
+
+  params[f"{date_key.replace('_at', '')}[gte]"] = date_val - 1
   page = 0
 
   all = []
   while True:
     page += 1
-    if page > 5: break
+    if page > limit: break
     params['page'] = page
     req.prepare_url(url, params)
     print(req.url)
@@ -129,9 +138,14 @@ def load_state():
   global state
   state = json.loads(s3.Object(key=STATE_KEY).get()["Body"].read().decode('utf-8'))
 
+  # re-run for past 3 days, an attempt to fill in any holes
+  for k in state:
+    state[k] = state.get(k, 1420070400) - 3*24*60*60
+
 def save_state():
   global state
   s3.Object(key=STATE_KEY).put(Body=json.dumps(state))
+  print(json.dumps(state))
 
 
 def run(event, context):
@@ -172,27 +186,40 @@ def run(event, context):
         else:
           records += data
 
+        send_batch(object_name, schema, keys, records)
+
         record = records[-1]
-        if date_key in record:
-          date_val = dateparser.parse(record[date_key])
-          ts_val = int(date_val.timestamp())
-          if date_val and ts_val > state[object_name]:
-            state[object_name] = ts_val
-        else:
-          print(f'no datekey: {date_key}')
-          pprint(record)
-
+        if date_key not in record:
+          raise Exception(f'no datekey: {date_key}')
         
-        if len(records) >= BATCH_SIZE or len(data) == 0:
-          send_batch(object_name, schema, keys, records)
+        records = []
 
-          # save state after successful push
+        date_val = dateparser.parse(record[date_key])
+        ts_val = int(date_val.timestamp())
+        if date_val and ts_val > state[object_name]:
+          state[object_name] = ts_val
           save_state()
-          
-          records = []
+        else:
+          break
+        
     except Exception as E:
       errors.append(format_exc())
-  
+    finally:
+      save_state()
+
+  # Missing responses START
+  # seems some responses are missing event with using gte. Gets the IDs from database
+  try:
+    responses = []
+    for row in get_missing_responses():
+      responses += [wootric_response(row.user_id, row.last_response__id)]
+    
+    response_config = object_configs.get('responses')
+    send_batch('responses', response_config['schema'], response_config['keys'], responses)
+  except Exception as E:
+      errors.append(format_exc())
+  # Missing responses END
+
   if len(errors) > 0:
     e = '\n\n'.join(errors)
     slack_client.send(text=f'Error occurred for Wootric-Stitch Integration:\n{e}')
