@@ -214,7 +214,7 @@ def run(event, context):
       save_state()
 
   # Missing users START
-  # seems users are missing event with using gte. Gets the IDs from database
+  # seems users are missing even with using gte. Gets the IDs from database
   try:
     users = []
     for row in get_missing_users():
@@ -227,7 +227,7 @@ def run(event, context):
   # Missing users END
 
   # Missing responses START
-  # seems some responses are missing event with using gte. Gets the IDs from database
+  # seems some responses are missing even with using gte. Gets the IDs from database
   try:
     responses = []
     for row in get_missing_responses():
