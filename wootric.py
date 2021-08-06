@@ -5,7 +5,7 @@ from pathlib import Path
 from pprint import pprint
 from traceback import format_exc
 
-from missing_responses import get_missing_responses
+from missing_data import get_missing_responses, get_missing_users
 
 
 BATCH_SIZE = 500
@@ -59,6 +59,12 @@ def get_access_token():
 
 def wootric_response(user_id: str, response_id: str):
   url = f'{BASE_URL}/v1/end_users/{user_id}/responses/{response_id}'
+  print(url)
+  resp = wootric_session.get(url)
+  return resp.json()
+
+def wootric_user(user_id: str):
+  url = f'{BASE_URL}/v1/end_users/{user_id}'
   print(url)
   resp = wootric_session.get(url)
   return resp.json()
@@ -206,6 +212,19 @@ def run(event, context):
       errors.append(format_exc())
     finally:
       save_state()
+
+  # Missing users START
+  # seems users are missing event with using gte. Gets the IDs from database
+  try:
+    users = []
+    for row in get_missing_users():
+      users += [wootric_user(row.end_user_id)]
+    
+    response_config = object_configs.get('end_users')
+    send_batch('end_users', response_config['schema'], response_config['keys'], users)
+  except Exception as E:
+      errors.append(format_exc())
+  # Missing users END
 
   # Missing responses START
   # seems some responses are missing event with using gte. Gets the IDs from database
