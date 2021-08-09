@@ -1,4 +1,4 @@
-service: aws-python-scheduled-cron
+service: aws-wootric-scheduler
 
 frameworkVersion: '2'
 
@@ -19,7 +19,7 @@ provider:
     PG_DSN: ${env:PG_DSN}
 
 functions:
-  rateHandler:
+  wootricRun:
     handler: wootric.run
     events:
       # Invoke Lambda function every hour
