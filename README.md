@@ -14,6 +14,7 @@ docker run -v /wootric-stitch:/wootric-stitch -it --rm nikolaik/python-nodejs:py
 npm i -g serverless
 
 cd /wootric-stitch
+pip install -r requirements.txt
 
 export AWS_ACCESS_KEY_ID=xxx # Admin credentials
 export AWS_SECRET_ACCESS_KEY=xxx # Admin credentials
