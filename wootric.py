@@ -87,12 +87,14 @@ def wootric_request(object_name: str, date_key: str, **params):
     params['page'] = page
     req.prepare_url(url, params)
     print(req.url)
-    resp = wootric_session.get(req.url)
-    if resp is None:
-      raise Exception(f'Response is for: {req.url}')
-    elif not resp.ok:
-      raise Exception(f'\n\nHTTP Status Code {resp.status_code} for {req.url}: \n{resp.text}')
-    
+    try:
+      resp = wootric_session.get(req.url)
+      if resp is None:
+        raise Exception(f'Response is for: {req.url}')
+      elif not resp.ok:
+        raise Exception(f'\n\nHTTP Status Code {resp.status_code} for {req.url}: \n{resp.text}')
+    except Exception:
+      raise Exception(f'Error for {req.url}.\n\n{format_exc()}')
     data = resp.json()
     if len(data) == 0:
       break
